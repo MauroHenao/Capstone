@@ -18,9 +18,9 @@ library(ngram)
 #Articles:
 art=tolower(stopwords("english"))
 #US:
-US.Blogdir=readLines("D:/Coursera/DataScience/CapStone/final/en_US/en_US.blogs.txt")
-US.Newsdir=readLines("D:/Coursera/DataScience/CapStone/final/en_US/en_US.news.txt")
-US.Twitdir=readLines("D:/Coursera/DataScience/CapStone/final/en_US/en_US.twitter.txt")
+US.Blogdir=readLines("D:/Coursera/DataScience/Capstone/en_US/en_US.blogs.txt")
+US.Newsdir=readLines("D:/Coursera/DataScience/Capstone/en_US/en_US.news.txt")
+US.Twitdir=readLines("D:/Coursera/DataScience/Capstone/en_US/en_US.twitter.txt")
 #DE:
 # DE.Blogdir=readLines("D:/Coursera/DataScience/CapStone/final/de_DE/de_DE.blogs.txt")
 # DE.Newsdir=readLines("D:/Coursera/DataScience/CapStone/final/de_DE/de_DE.news.txt")
@@ -199,6 +199,34 @@ for (i in 1:length(sInfo))
   Quagram[[i]] <- Quagram[[i]][order(Quagram[[i]]$Count,decreasing = TRUE),]
 }
 
+####Saving N-Grams
+
+setwd("D:/Coursera/DataScience/Capstone")
+#Blogs:
+BQuagram=Quagram[[1]]
+save(BQuagram, file="BQuagram.RData")
+Btrigram=trigram[[1]]
+save(Btrigram, file="BTrigram.RData")
+
+
+#News:
+NQuagram=Quagram[[2]]
+save(NQuagram, file="NQuagram.RData")
+Ntrigram=trigram[[2]]
+save(Ntrigram, file="NTrigram.RData")
+
+
+#Twitter:
+TQuagram=Quagram[[3]]
+TQuagram=TQuagram[TQuagram$Count>2,]
+save(TQuagram, file="TQuagram.RData")
+Ttrigram=trigram[[3]]
+Ttrigram=Ttrigram[Ttrigram$Count>5,]
+save(Ttrigram, file="TTrigram.RData")
+
+#Bigram for all
+Bigram=bigram[bigram$Count>100,]
+save(Bigram, file="Bigram.RData")
 
 #Predictions
 
