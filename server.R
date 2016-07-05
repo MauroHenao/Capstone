@@ -1,3 +1,17 @@
+#For general stats
+#library(stringi)
+
+library(stringr)
+library(tm)
+# library(ggplot2)
+# library(wordcloud)
+# library(dplyr)
+# #library(slam)
+# #require(reshape2)
+# library(ngram)
+
+
+
 library(shiny)
 #Load the Ngrams
 load("BQuagram.RData")
@@ -18,42 +32,75 @@ osentence=function(w)
   #Colocar texto en minúsculas
   w = tolower(w)
   inStr <- unlist(strsplit(w, split=" "))
+  if(length(inStr)==1)
+  {
+    art=tolower(stopwords("english"))
+    w1=unlist(strsplit(w, "[ ]"))
+    w1=w1[-which(w1 %in% art)]
+    w1=paste(w1, collapse=" ")
+    inStr <- unlist(strsplit(w1, split=" "))
+  }
   return(inStr)
 }
 
 #Function with qua and trigram
 modelQT=function(inStr,inStrLen)
 {
-  for (i in 1:length(sInfo))
+  Quagram=rbind(BQuagram,NQuagram,TQuagram)
+  Quagram <- Quagram[order(Quagram$Count,decreasing = TRUE),]
+  Trigram=rbind(Btrigram,Ntrigram,Ttrigram)
+  Trigram <- Trigram[order(Trigram$Count,decreasing = TRUE),]
+  if(inStrLen>2)
   {
     #Prediction with the QuadGram
-    
     inStr1 <- paste(inStr[(inStrLen-2):inStrLen], collapse=" ");
     searchStr <- paste("^",inStr1, sep = "");
     
-    quadsentlist[[i]] <- Quagram[[i]][grep (searchStr, Quagram[[i]]$Quagram), ]
-    
+    quadsentlist <- Quagram[grep (searchStr, Quagram$Quagram), ]
+    pw=as.data.frame(word(quadsentlist[,1],-1))
+    if(nrow(pw)!=0)
+    {  
+      names(pw)="Next_Word"
+      return(pw)
+    }
+  }
+  else if(inStrLen>1)
+  {
     #Prediction with the TriGram
     
-    inStr1 <- paste(inStr[(inStrLen-1):inStrLen], collapse=" ");
-    searchStr <- paste("^",inStr1, sep = "");
+     inStr1 <- paste(inStr[(inStrLen-1):inStrLen], collapse=" ")
+     searchStr <- paste("^",inStr1, sep = "")
+     trisentlist <- Trigram[grep (searchStr, Trigram$trigram), ]
+     pw=as.data.frame(word(trisentlist[,1],-1))
+     if(nrow(pw)!=0)
+     {  
+       names(pw)="Next_Word"
+       return(pw)
+     }     
+  }
+  else if(inStrLen>=1)
+  {
+    #Prediction with Bigram
+    inStr <- paste(inStr[inStrLen], collapse=" ");
+    searchStr <- paste("^",inStr, sep = "");
     
-    trisentlist[[i]] <- trigram[[i]][grep (searchStr, trigram[[i]]$trigram), ]
+    bisentlist <- bigram[grep (searchStr, bigram$bigram), ]
+    pw=as.data.frame(word(bisentlist[,1],-1))
+    if(nrow(pw)!=0)
+    {  
+      names(pw)="Next_Word"
+      return(pw)
+    }
   }
 }
-
 
 shinyServer
 (  
   function(input, output,session) 
   { 
-    
-    #Qua and trigram
-    inStr <-osentence(input$word)
-    inStrLen <- length(inStr);
-    
+    observeEvent(input$Calculo,output$modelo<-renderDataTable(modelQT(osentence(input$word),length(osentence(input$word)))))
 #Mostrar las primeras 10 filas con los asesores top del modelo
-    output$modelo<-renderDataTable(modelfraude)
+
 #     output$grafica<-renderPlot({ggplot(modelfraude1, aes(x=AsesorSinDirecto ,y=value,fill=variable)) +
 #         geom_bar(stat="identity",position="dodge")})
 # 
