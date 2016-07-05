@@ -14,7 +14,7 @@ shinyUI
      mainPanel
      (
         h4("The next word is one of these options:"),
-        plotOutput("grafica"),
+        #plotOutput("grafica"),
         dataTableOutput("modelo")
      )
     )
