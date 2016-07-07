@@ -23,7 +23,7 @@ load("TTrigram.RData")
 load("Bigram.RData")
 
 #Organizing the sentence that was written fo Qua and Trigram:
-osentence=function(w)
+osentence=function(w,b)
 {
   w=iconv(w,to="ASCII//TRANSLIT")
   #w = sub("([[:space:]])","",w)
@@ -32,7 +32,7 @@ osentence=function(w)
   #Colocar texto en minúsculas
   w = tolower(w)
   inStr <- unlist(strsplit(w, split=" "))
-  if(length(inStr)==1)
+  if(b==1)
   {
     art=tolower(stopwords("english"))
     w1=unlist(strsplit(w, "[ ]"))
@@ -44,8 +44,10 @@ osentence=function(w)
 }
 
 #Function with qua and trigram
-modelQT=function(inStr,inStrLen)
+modelQT=function(sen)
 {
+  inStr=osentence(sen,0)
+  inStrLen=length(inStr)
   Quagram=rbind(BQuagram,NQuagram,TQuagram)
   Quagram <- Quagram[order(Quagram$Count,decreasing = TRUE),]
   Trigram=rbind(Btrigram,Ntrigram,Ttrigram)
@@ -78,13 +80,14 @@ modelQT=function(inStr,inStrLen)
        return(pw)
      }     
   }
-  else if(inStrLen>=1)
+  else
   {
     #Prediction with Bigram
+    inStr=osentence(sen,1)
+    inStrLen=length(inStr)
     inStr <- paste(inStr[inStrLen], collapse=" ");
     searchStr <- paste("^",inStr, sep = "");
-    
-    bisentlist <- bigram[grep (searchStr, bigram$bigram), ]
+    bisentlist <- Bigram[grep (searchStr, Bigram$bigram), ]
     pw=as.data.frame(word(bisentlist[,1],-1))
     if(nrow(pw)!=0)
     {  
@@ -98,7 +101,7 @@ shinyServer
 (  
   function(input, output,session) 
   { 
-    observeEvent(input$Calculo,output$modelo<-renderDataTable(modelQT(osentence(input$word),length(osentence(input$word)))))
+    observeEvent(input$Calculo,output$modelo<-renderDataTable(modelQT(input$word)))
 #Mostrar las primeras 10 filas con los asesores top del modelo
 
 #     output$grafica<-renderPlot({ggplot(modelfraude1, aes(x=AsesorSinDirecto ,y=value,fill=variable)) +
